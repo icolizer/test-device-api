@@ -4,6 +4,7 @@ import de.device.demo.dtos.DeviceCreateRequest;
 import de.device.demo.dtos.DeviceResponse;
 import de.device.demo.models.DeviceState;
 import de.device.demo.repositories.DeviceRepository;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.core.Is;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -81,4 +82,18 @@ class DeviceCreationTest {
                 .andReturn();
     }
 
+    @Test
+    void whenNameAndBrandIsTooLong_returnValidationError() throws Exception {
+        var randomName256Chars = RandomStringUtils.insecure().next(256);
+        var randomBrand256Chars = RandomStringUtils.insecure().next(256);
+        var device = new DeviceCreateRequest(randomName256Chars, randomBrand256Chars);
+
+        mockMvc.perform(post("/api/devices")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(device)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.name", Is.is("Device name should not be longer 255 characters")))
+                .andExpect(jsonPath("$.brand", Is.is("Brand name should not be longer 255 characters")))
+                .andReturn();
+    }
 }
