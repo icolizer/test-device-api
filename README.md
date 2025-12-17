@@ -25,3 +25,16 @@ Stop with remove:
 ```bash
 docker-compose down
 ```
+
+## API
+
+### Create device
+
+POST method:
+
+```bash
+curl -i -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"name":"test","brand":"test"}' \
+  "http://localhost:8080/api/devices"
+```
