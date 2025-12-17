@@ -14,6 +14,8 @@ Use H2 database and `dev` profile.
 
 ### Docker environment
 
+Uses Postgres database and containerised application with active prod profile.
+
 Start with build:
 
 ```bash
