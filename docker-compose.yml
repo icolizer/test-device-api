@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_DB: devices
+      POSTGRES_USER: admin_admin
+      POSTGRES_PASSWORD: pa$$word
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin_admin -d devices"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: spring-boot-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/devices
+      SPRING_DATASOURCE_USERNAME: admin_admin
+      SPRING_DATASOURCE_PASSWORD: pa$$word
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:

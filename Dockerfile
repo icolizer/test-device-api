@@ -30,4 +30,4 @@ USER spring
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "app.jar", "-Dspring-boot.run.profiles=dev"]
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "app.jar"]
