@@ -6,8 +6,10 @@ import de.device.demo.models.DeviceState;
 import de.device.demo.repositories.DeviceRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.core.Is;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -23,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DeviceCreationTest {
 
     @Autowired
@@ -33,6 +36,11 @@ class DeviceCreationTest {
 
     @Autowired
     private DeviceRepository deviceRepository;
+
+    @AfterAll
+    void tearDown() {
+        deviceRepository.deleteAll();
+    }
 
     @Test
     void success() throws Exception {

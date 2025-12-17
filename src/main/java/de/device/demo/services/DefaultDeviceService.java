@@ -5,14 +5,16 @@ import de.device.demo.entities.Device;
 import de.device.demo.factories.DeviceFactory;
 import de.device.demo.repositories.DeviceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class DefaultDeviceService implements DeviceService {
 
-    private DeviceFactory deviceFactory;
-    private DeviceRepository deviceRepository;
+    private final DeviceFactory deviceFactory;
+    private final DeviceRepository deviceRepository;
 
     @Autowired
     public DefaultDeviceService(DeviceFactory deviceFactory, DeviceRepository deviceRepository) {
@@ -20,11 +22,15 @@ public class DefaultDeviceService implements DeviceService {
         this.deviceRepository = deviceRepository;
     }
 
-
     @Override
     @Transactional
     public Device create(DeviceCreateRequest deviceCreateRequest) {
         var device = deviceFactory.createDevice(deviceCreateRequest.name(), deviceCreateRequest.brand());
         return deviceRepository.save(device);
+    }
+
+    @Override
+    public Page<Device> getDevices(Pageable pageable) {
+        return deviceRepository.findAll(pageable);
     }
 }

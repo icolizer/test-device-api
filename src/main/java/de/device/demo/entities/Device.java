@@ -26,6 +26,24 @@ public class Device {
     @Column(name = "creation_time", nullable = false)
     private LocalDateTime creationTime;
 
+    public Device() {
+    }
+
+    public Device(String name, String brand, DeviceState state, LocalDateTime creationTime) {
+        this.name = name;
+        this.brand = brand;
+        this.state = state;
+        this.creationTime = creationTime;
+    }
+
+    public Device(Long id, String name, String brand, DeviceState state, LocalDateTime creationTime) {
+        this.id = id;
+        this.name = name;
+        this.brand = brand;
+        this.state = state;
+        this.creationTime = creationTime;
+    }
+
     public Long getId() {
         return id;
     }
