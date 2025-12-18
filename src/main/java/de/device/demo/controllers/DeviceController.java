@@ -9,6 +9,8 @@ import de.device.demo.services.DeviceService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.jspecify.annotations.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,6 +26,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/devices")
 public class DeviceController {
 
+    private static final Logger log = LoggerFactory.getLogger(DeviceController.class);
+
     private final DeviceService deviceService;
 
     @Autowired
@@ -36,6 +40,8 @@ public class DeviceController {
     public ResponseEntity<@NonNull DeviceResponse> createDevice(
             @Valid @RequestBody DeviceCreateRequest deviceCreateRequest
     ) {
+        log.info("Create request");
+
         var newDevice = deviceService.create(deviceCreateRequest);
         var responseDto = new DeviceResponse(newDevice);
 
@@ -45,6 +51,8 @@ public class DeviceController {
     @Tag(name = "find", description = "Find device by device id provided as path variable")
     @GetMapping("/{id}")
     public ResponseEntity<@NonNull DeviceResponse> device(@PathVariable("id") Long id) {
+        log.info("Find device request id {}", id);
+
         return new ResponseEntity<>(
                 new DeviceResponse(deviceService.getById(id)),
                 HttpStatus.OK
@@ -58,6 +66,8 @@ public class DeviceController {
             @RequestParam(required = false) String state,
             @ParameterObject @PageableDefault(size = 100) Pageable pageable
     ) {
+        log.info("Find devices request brand {} and state {}", brand, state);
+
         Page<Device> devices;
 
         if (brand == null && state == null) {
@@ -86,6 +96,8 @@ public class DeviceController {
             @PathVariable("id") Long id,
             @Valid @RequestBody DeviceUpdateRequest deviceUpdateRequest
     ) {
+        log.info("Update device id {}", id);
+
         var device = deviceService.update(id, deviceUpdateRequest);
 
         return new ResponseEntity<>(new DeviceResponse(device), HttpStatus.OK);
@@ -94,6 +106,8 @@ public class DeviceController {
     @Tag(name = "delete", description = "Delete device by id")
     @DeleteMapping("/{id}")
     public ResponseEntity<@NonNull DeviceResponse> delete(@PathVariable("id") Long id) {
+        log.info("Delete device id {}", id);
+
         deviceService.delete(id);
 
         return ResponseEntity.noContent().build();
