@@ -25,6 +25,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/devices
       SPRING_DATASOURCE_USERNAME: admin_admin
       SPRING_DATASOURCE_PASSWORD: pa$$word

@@ -9,7 +9,7 @@ Simple REST API to manage device entries.
 Use H2 database and `dev` profile.
 
 ```bash
-./gradlew :bootRun -Dspring-boot.run.profiles=dev
+./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
 
 ### Docker environment
