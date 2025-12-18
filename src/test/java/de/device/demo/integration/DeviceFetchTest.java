@@ -95,6 +95,6 @@ class DeviceFetchTest {
         mockMvc.perform(get("/api/devices/" + Long.MAX_VALUE)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message", startsWith(Errors.DEVICE_ID_NOT_FOUND.getInternalSematic())));
+                .andExpect(jsonPath("$.message", startsWith(Errors.DEVICE_ID_NOT_FOUND.getErrorCode())));
     }
 }

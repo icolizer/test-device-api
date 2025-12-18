@@ -1,15 +1,16 @@
 package de.device.demo.errors;
 
 public enum Errors {
-    DEVICE_ID_NOT_FOUND("E00001");
+    DEVICE_ID_NOT_FOUND("E00001"),
+    DEVICE_NOT_MODIFIABLE("E00101");
 
-    private final String internalSematic;
+    private final String code;
 
-    Errors(String sematic) {
-        internalSematic = sematic;
+    Errors(String code) {
+        this.code = code;
     }
 
-    public String getInternalSematic() {
-        return internalSematic;
+    public String getErrorCode() {
+        return code;
     }
 }

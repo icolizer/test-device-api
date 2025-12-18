@@ -5,7 +5,7 @@ public class DeviceNotFoundException extends RuntimeException {
         super(
                 String.format(
                         "%s: Device with provided id %d wasn't found",
-                        Errors.DEVICE_ID_NOT_FOUND.getInternalSematic(),
+                        Errors.DEVICE_ID_NOT_FOUND.getErrorCode(),
                         id
                 )
         );
