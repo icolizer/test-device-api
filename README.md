@@ -28,9 +28,9 @@ Stop with remove:
 docker-compose down
 ```
 
-## API
+#### Test running app
 
-### Create device
+Execute curl command to check the app is responsible to accept requests by creating a new `Device` object:
 
 POST method:
 
@@ -40,3 +40,20 @@ curl -i -X POST \
   -d '{"name":"test","brand":"test"}' \
   "http://localhost:8080/api/devices"
 ```
+
+Expect the same output in terminal:
+
+```terminaloutput
+HTTP/1.1 201 
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 18 Dec 2025 22:54:17 GMT
+
+{"brand":"test","creation_time":"2025-12-18T22:54:17","id":1,"name":"test","state":"AVAILABLE"}
+```
+
+## API documentation
+
+Once the application is running, the API documentation can be accessed at:
+
+http://localhost:8080/swagger-ui/index.html

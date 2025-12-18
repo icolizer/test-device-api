@@ -6,8 +6,10 @@ import de.device.demo.dtos.DeviceUpdateRequest;
 import de.device.demo.entities.Device;
 import de.device.demo.models.DeviceState;
 import de.device.demo.services.DeviceService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.jspecify.annotations.NonNull;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -17,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "Device REST API", description = "Manage Devices entries")
 @RestController
 @RequestMapping("/api/devices")
 public class DeviceController {
@@ -28,6 +31,7 @@ public class DeviceController {
         this.deviceService = deviceService;
     }
 
+    @Tag(name = "create", description = "Create new Device entry with default state")
     @PostMapping
     public ResponseEntity<@NonNull DeviceResponse> createDevice(
             @Valid @RequestBody DeviceCreateRequest deviceCreateRequest
@@ -38,6 +42,7 @@ public class DeviceController {
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
 
+    @Tag(name = "find", description = "Find device by device id provided as path variable")
     @GetMapping("/{id}")
     public ResponseEntity<@NonNull DeviceResponse> device(@PathVariable("id") Long id) {
         return new ResponseEntity<>(
@@ -46,17 +51,12 @@ public class DeviceController {
         );
     }
 
-    /***
-     * List devices
-     *
-     * @param pageable default 3 only used as an example to simplify tests
-     * @return Response with devices limited by pages
-     */
+    @Tag(name = "find all", description = "Find all devices or also search by brand name or state")
     @GetMapping
     public Page<@NonNull DeviceResponse> devices(
             @RequestParam(required = false) String brand,
             @RequestParam(required = false) String state,
-            @PageableDefault(size = 3) Pageable pageable
+            @ParameterObject @PageableDefault(size = 100) Pageable pageable
     ) {
         Page<Device> devices;
 
@@ -80,6 +80,7 @@ public class DeviceController {
         return new PageImpl<>(devicesResponse, pageable, devices.getTotalElements());
     }
 
+    @Tag(name = "update", description = "Update device by id and DeviceUpdateRequest payload")
     @PutMapping("/{id}")
     public ResponseEntity<@NonNull DeviceResponse> update(
             @PathVariable("id") Long id,
@@ -90,6 +91,7 @@ public class DeviceController {
         return new ResponseEntity<>(new DeviceResponse(device), HttpStatus.OK);
     }
 
+    @Tag(name = "delete", description = "Delete device by id")
     @DeleteMapping("/{id}")
     public ResponseEntity<@NonNull DeviceResponse> delete(@PathVariable("id") Long id) {
         deviceService.delete(id);

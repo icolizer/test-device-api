@@ -59,7 +59,7 @@ class DeviceFetchTest {
 
         deviceRepository.saveAll(devices);
 
-        var requestResult = mockMvc.perform(get("/api/devices")
+        var requestResult = mockMvc.perform(get("/api/devices?size=3")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -111,7 +111,7 @@ class DeviceFetchTest {
         deviceRepository.save(knownDevice2);
         deviceRepository.save(impurity);
 
-        var requestResult = mockMvc.perform(get("/api/devices?brand=" + brand)
+        var requestResult = mockMvc.perform(get("/api/devices?brand=" + brand + "&size=3")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
