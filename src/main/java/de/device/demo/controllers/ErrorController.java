@@ -48,6 +48,12 @@ public class ErrorController {
         return Map.of("message", e.getMessage());
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public Map<String, String> handleIllegalArgumentException(IllegalArgumentException e) {
+        return Map.of("message", e.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleAllOtherExceptions(Exception ex) {
         return new ResponseEntity<>(

@@ -39,6 +39,16 @@ public class DefaultDeviceService implements DeviceService {
     }
 
     @Override
+    public Page<Device> getDevicesByBrand(String brand, Pageable pageable) {
+        return deviceRepository.findByBrand(brand, pageable);
+    }
+
+    @Override
+    public Page<Device> getDevicesByState(DeviceState state, Pageable pageable) {
+        return deviceRepository.findByState(state, pageable);
+    }
+
+    @Override
     public Device getById(Long id) {
         return deviceRepository.findById(id)
                 .orElseThrow(() -> new DeviceNotFoundException(id));

@@ -97,4 +97,70 @@ class DeviceFetchTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message", startsWith(Errors.DEVICE_ID_NOT_FOUND.getErrorCode())));
     }
+
+    @Test
+    public void fetchDeviceByBrand_isOk() throws Exception {
+        var brand = "sayHello";
+        var deviceWithName1 = "testName1";
+        var deviceWithName2 = "testName2";
+        var knownDevice1 = new Device(deviceWithName1, brand, DeviceState.AVAILABLE, LocalDateTime.now());
+        var knownDevice2 = new Device(deviceWithName2, brand, DeviceState.AVAILABLE, LocalDateTime.now());
+        var impurity = new Device(deviceWithName2, "any other brand", DeviceState.AVAILABLE, LocalDateTime.now());
+
+        deviceRepository.save(knownDevice1);
+        deviceRepository.save(knownDevice2);
+        deviceRepository.save(impurity);
+
+        var requestResult = mockMvc.perform(get("/api/devices?brand=" + brand)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var responseBody = requestResult.getResponse().getContentAsString();
+        var devicesList = objectMapper.readValue(
+                responseBody,
+                new TypeReference<PageableModelTest<DeviceResponse>>() {}
+        );
+
+        Assertions.assertEquals(2, devicesList.totalElements());
+        Assertions.assertEquals(deviceWithName1, devicesList.content().getFirst().getName());
+        Assertions.assertEquals(deviceWithName2, devicesList.content().getLast().getName());
+    }
+
+    @Test
+    public void fetchDeviceByState_isOk() throws Exception {
+        var brand = "fetchDeviceByState_isOk";
+        var deviceWithName1 = "testName1";
+        var deviceWithName2 = "testName2";
+        var knownDevice1 = new Device(deviceWithName1, brand, DeviceState.INACTIVE, LocalDateTime.now());
+        var knownDevice2 = new Device(deviceWithName2, brand, DeviceState.INACTIVE, LocalDateTime.now());
+        var impurity = new Device(deviceWithName2, "any other brand", DeviceState.AVAILABLE, LocalDateTime.now());
+
+        deviceRepository.save(knownDevice1);
+        deviceRepository.save(knownDevice2);
+        deviceRepository.save(impurity);
+
+        var requestResult = mockMvc.perform(get("/api/devices?state=" + DeviceState.INACTIVE.name())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var responseBody = requestResult.getResponse().getContentAsString();
+        var devicesList = objectMapper.readValue(
+                responseBody,
+                new TypeReference<PageableModelTest<DeviceResponse>>() {}
+        );
+
+        Assertions.assertEquals(2, devicesList.totalElements());
+        Assertions.assertEquals(DeviceState.INACTIVE.name(), devicesList.content().getFirst().getState());
+        Assertions.assertEquals(DeviceState.INACTIVE.name(), devicesList.content().getLast().getState());
+    }
+
+    @Test
+    public void fetchDeviceByState_isBadRequestStateParsingError() throws Exception {
+        mockMvc.perform(get("/api/devices?state=unknown_state_test")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", startsWith("Device state value is incorrect use: ")));
+    }
 }

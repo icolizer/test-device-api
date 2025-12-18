@@ -3,6 +3,8 @@ package de.device.demo.controllers;
 import de.device.demo.dtos.DeviceCreateRequest;
 import de.device.demo.dtos.DeviceResponse;
 import de.device.demo.dtos.DeviceUpdateRequest;
+import de.device.demo.entities.Device;
+import de.device.demo.models.DeviceState;
 import de.device.demo.services.DeviceService;
 import jakarta.validation.Valid;
 import org.jspecify.annotations.NonNull;
@@ -51,8 +53,26 @@ public class DeviceController {
      * @return Response with devices limited by pages
      */
     @GetMapping
-    public Page<@NonNull DeviceResponse> devices(@PageableDefault(size = 3) Pageable pageable) {
-        var devices = deviceService.getDevices(pageable);
+    public Page<@NonNull DeviceResponse> devices(
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) String state,
+            @PageableDefault(size = 3) Pageable pageable
+    ) {
+        Page<Device> devices;
+
+        if (brand == null && state == null) {
+            devices = deviceService.getDevices(pageable);
+        } else if (brand != null) {
+            devices = deviceService.getDevicesByBrand(brand, pageable);
+        } else {
+            try {
+                var stateValue = DeviceState.valueOf(state);
+                devices = deviceService.getDevicesByState(stateValue, pageable);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Device state value is incorrect use: " + DeviceState.getValuesDescription());
+            }
+        }
+
         var devicesResponse = devices.stream().parallel()
                 .map(DeviceResponse::new)
                 .toList();
