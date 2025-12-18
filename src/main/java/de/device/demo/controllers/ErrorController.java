@@ -4,6 +4,7 @@ import de.device.demo.errors.DeviceInUseModificationException;
 import de.device.demo.errors.DeviceNotFoundException;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -45,5 +46,13 @@ public class ErrorController {
     @ExceptionHandler(DeviceInUseModificationException.class)
     public Map<String, String> handleDeviceInUseModificationException(DeviceInUseModificationException e) {
         return Map.of("message", e.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleAllOtherExceptions(Exception ex) {
+        return new ResponseEntity<>(
+                Map.of("error", "An unexpected error occurred."),
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
     }
 }
