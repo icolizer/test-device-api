@@ -89,4 +89,11 @@ public class DeviceController {
 
         return new ResponseEntity<>(new DeviceResponse(device), HttpStatus.OK);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<@NonNull DeviceResponse> delete(@PathVariable("id") Long id) {
+        deviceService.delete(id);
+
+        return ResponseEntity.noContent().build();
+    }
 }

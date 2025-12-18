@@ -14,4 +14,5 @@ public interface DeviceService {
     Device update(Long id, DeviceUpdateRequest deviceCreateRequest);
     Page<Device> getDevicesByBrand(String brand, Pageable pageable);
     Page<Device> getDevicesByState(DeviceState state, Pageable pageable);
+    void delete(Long id);
 }

@@ -1,6 +1,7 @@
 package de.device.demo.controllers;
 
-import de.device.demo.errors.DeviceInUseModificationException;
+import de.device.demo.errors.DeviceInUseDeleteException;
+import de.device.demo.errors.DeviceInUseUpdateModificationException;
 import de.device.demo.errors.DeviceNotFoundException;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
@@ -43,8 +44,14 @@ public class ErrorController {
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler(DeviceInUseModificationException.class)
-    public Map<String, String> handleDeviceInUseModificationException(DeviceInUseModificationException e) {
+    @ExceptionHandler(DeviceInUseUpdateModificationException.class)
+    public Map<String, String> handleDeviceInUseUpdateModificationException(DeviceInUseUpdateModificationException e) {
+        return Map.of("message", e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(DeviceInUseDeleteException.class)
+    public Map<String, String> handleDeviceInUseDeleteException(DeviceInUseDeleteException e) {
         return Map.of("message", e.getMessage());
     }
 
