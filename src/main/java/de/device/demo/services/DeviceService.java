@@ -8,4 +8,5 @@ import org.springframework.data.domain.Pageable;
 public interface DeviceService {
     Device create(DeviceCreateRequest req);
     Page<Device> getDevices(Pageable pageable);
+    Device getById(Long id);
 }

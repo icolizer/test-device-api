@@ -2,6 +2,7 @@ package de.device.demo.services;
 
 import de.device.demo.dtos.DeviceCreateRequest;
 import de.device.demo.entities.Device;
+import de.device.demo.errors.DeviceNotFoundException;
 import de.device.demo.factories.DeviceFactory;
 import de.device.demo.repositories.DeviceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,5 +33,11 @@ public class DefaultDeviceService implements DeviceService {
     @Override
     public Page<Device> getDevices(Pageable pageable) {
         return deviceRepository.findAll(pageable);
+    }
+
+    @Override
+    public Device getById(Long id) {
+        return deviceRepository.findById(id)
+                .orElseThrow(() -> new DeviceNotFoundException(id));
     }
 }

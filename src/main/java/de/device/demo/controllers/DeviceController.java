@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @RestController
@@ -37,6 +38,11 @@ public class DeviceController {
         var responseDto = new DeviceResponse(newDevice);
 
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/{id}")
+    public DeviceResponse device(@PathVariable("id") Long id) {
+        return new DeviceResponse(deviceService.getById(id));
     }
 
     /***

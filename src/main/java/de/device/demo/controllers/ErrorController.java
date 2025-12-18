@@ -1,5 +1,6 @@
 package de.device.demo.controllers;
 
+import de.device.demo.errors.DeviceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -25,5 +26,11 @@ public class ErrorController {
         });
 
         return errors;
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(DeviceNotFoundException.class)
+    public Map<String, String> handleDeviceNotFoundException(DeviceNotFoundException e) {
+        return Map.of("message", e.getMessage());
     }
 }
