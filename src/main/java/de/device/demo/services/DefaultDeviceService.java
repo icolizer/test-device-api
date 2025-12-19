@@ -1,30 +1,42 @@
 package de.device.demo.services;
 
 import de.device.demo.dtos.DeviceCreateRequest;
-import de.device.demo.dtos.DeviceUpdateRequest;
+import de.device.demo.dtos.DevicePatchRequest;
+import de.device.demo.dtos.DevicePutRequest;
 import de.device.demo.entities.Device;
 import de.device.demo.errors.DeviceInUseDeleteException;
 import de.device.demo.errors.DeviceInUseUpdateModificationException;
 import de.device.demo.errors.DeviceNotFoundException;
+import de.device.demo.errors.DeviceUpdateCreationTimeException;
 import de.device.demo.factories.DeviceFactory;
 import de.device.demo.models.DeviceState;
+import de.device.demo.models.UpsertDevice;
 import de.device.demo.repositories.DeviceRepository;
+import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 public class DefaultDeviceService implements DeviceService {
 
     private final DeviceFactory deviceFactory;
     private final DeviceRepository deviceRepository;
+    private final EntityManager entityManager;
 
     @Autowired
-    public DefaultDeviceService(DeviceFactory deviceFactory, DeviceRepository deviceRepository) {
+    public DefaultDeviceService(
+            DeviceFactory deviceFactory,
+            DeviceRepository deviceRepository,
+            EntityManager entityManager
+    ) {
         this.deviceFactory = deviceFactory;
         this.deviceRepository = deviceRepository;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -54,34 +66,54 @@ public class DefaultDeviceService implements DeviceService {
 
     @Override
     @Transactional(readOnly = true)
-    public Device getById(Long id) {
+    public Device getById(UUID id) {
         return deviceRepository.findById(id)
                 .orElseThrow(() -> new DeviceNotFoundException(id));
     }
 
     @Override
     @Transactional
-    public Device update(Long id, DeviceUpdateRequest deviceUpdateRequest) {
+    public Device update(UUID id, DevicePatchRequest devicePatchRequest) {
         var device = deviceRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new DeviceNotFoundException(id));
 
         if (
-                (deviceUpdateRequest.name() != null || deviceUpdateRequest.brand() != null) &&
+                (devicePatchRequest.name() != null || devicePatchRequest.brand() != null) &&
                         device.getState() == DeviceState.IN_USE
         ) {
             throw new DeviceInUseUpdateModificationException(id);
         }
 
-        device.setName(deviceUpdateRequest.name() != null ? deviceUpdateRequest.name() : device.getName());
-        device.setBrand(deviceUpdateRequest.brand() != null ? deviceUpdateRequest.brand() : device.getBrand());
-        device.setState(deviceUpdateRequest.state() != null ? DeviceState.valueOf(deviceUpdateRequest.state()) : device.getState());
+        device.setName(devicePatchRequest.name() != null ? devicePatchRequest.name() : device.getName());
+        device.setBrand(devicePatchRequest.brand() != null ? devicePatchRequest.brand() : device.getBrand());
+        device.setState(devicePatchRequest.state() != null ? DeviceState.valueOf(devicePatchRequest.state()) : device.getState());
 
         return deviceRepository.saveAndFlush(device);
     }
 
     @Override
     @Transactional
-    public void delete(Long id) {
+    public UpsertDevice upsert(UUID id, DevicePutRequest devicePutRequest) {
+        boolean created;
+        Device device;
+
+        var deviceEntity = deviceRepository.findByIdForUpdate(id);
+        if (deviceEntity.isPresent()) {
+            device = updateExisting(deviceEntity.get(), devicePutRequest);
+            created = false;
+        } else {
+            device = createNew(id, devicePutRequest);
+            created = true;
+        }
+
+        var saved = deviceRepository.save(device);
+
+        return new UpsertDevice(created, saved);
+    }
+
+    @Override
+    @Transactional
+    public void delete(UUID id) {
         var device = deviceRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new DeviceNotFoundException(id));
 
@@ -90,5 +122,37 @@ public class DefaultDeviceService implements DeviceService {
         }
 
         deviceRepository.deleteById(id);
+    }
+
+    private Device updateExisting(Device device, DevicePutRequest putRequest) {
+        if (putRequest.creationTime() != null) {
+            throw new DeviceUpdateCreationTimeException(device.getId());
+        }
+
+        boolean nameOrBrandChanged = !putRequest.name().equals(device.getName()) || !putRequest.brand().equals(device.getBrand());
+
+        if (nameOrBrandChanged && device.getState() == DeviceState.IN_USE) {
+            throw new DeviceInUseUpdateModificationException(device.getId());
+        }
+
+        device.setName(putRequest.name());
+        device.setBrand(putRequest.brand());
+        device.setState(DeviceState.valueOf(putRequest.state()));
+
+        return device;
+    }
+
+    private Device createNew(UUID id, DevicePutRequest putRequest) {
+        if (putRequest.creationTime() == null) {
+            throw new IllegalArgumentException("A required field 'creation_time' is missing");
+        }
+
+        return deviceFactory.createDevice(
+                id,
+                putRequest.name(),
+                putRequest.brand(),
+                DeviceState.valueOf(putRequest.state()),
+                putRequest.creationTime()
+        );
     }
 }

@@ -4,14 +4,15 @@ import de.device.demo.models.DeviceState;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "devices")
 public class Device {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     @Column(nullable = false)
     private String name;
@@ -36,7 +37,7 @@ public class Device {
         this.creationTime = creationTime;
     }
 
-    public Device(Long id, String name, String brand, DeviceState state, LocalDateTime creationTime) {
+    public Device(UUID id, String name, String brand, DeviceState state, LocalDateTime creationTime) {
         this.id = id;
         this.name = name;
         this.brand = brand;
@@ -44,11 +45,11 @@ public class Device {
         this.creationTime = creationTime;
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

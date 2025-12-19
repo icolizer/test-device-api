@@ -1,8 +1,6 @@
 package de.device.demo.controllers;
 
-import de.device.demo.errors.DeviceInUseDeleteException;
-import de.device.demo.errors.DeviceInUseUpdateModificationException;
-import de.device.demo.errors.DeviceNotFoundException;
+import de.device.demo.errors.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSourceResolvable;
@@ -13,14 +11,32 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @RestControllerAdvice
 public class ErrorController {
 
     private static final Logger log = LoggerFactory.getLogger(ErrorController.class);
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public Map<String, String> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        final Map<String, String> errorResponse;
+
+        if (ex.getRequiredType() == UUID.class) {
+            errorResponse = Map.of("message", "Invalid UUID format");
+        } else {
+            errorResponse = Map.of("message", "Invalid request parameter " + ex.getParameter().getParameterName());
+        }
+
+        log.error(errorResponse.toString());
+
+        return errorResponse;
+    }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -52,16 +68,8 @@ public class ErrorController {
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler(DeviceInUseUpdateModificationException.class)
-    public Map<String, String> handleDeviceInUseUpdateModificationException(DeviceInUseUpdateModificationException e) {
-        log.error(e.getMessage());
-
-        return Map.of("message", e.getMessage());
-    }
-
-    @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler(DeviceInUseDeleteException.class)
-    public Map<String, String> handleDeviceInUseDeleteException(DeviceInUseDeleteException e) {
+    @ExceptionHandler(DeviceModificationException.class)
+    public Map<String, String> handleDeviceInUseUpdateModificationException(DeviceModificationException e) {
         log.error(e.getMessage());
 
         return Map.of("message", e.getMessage());

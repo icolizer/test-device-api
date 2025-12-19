@@ -11,15 +11,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
-import static jakarta.persistence.LockModeType.PESSIMISTIC_WRITE;
+import static jakarta.persistence.LockModeType.PESSIMISTIC_READ;
 
 @Repository
-public interface DeviceRepository extends JpaRepository<@NonNull Device, @NonNull Long> {
+public interface DeviceRepository extends JpaRepository<@NonNull Device, @NonNull UUID> {
 
-    @Lock(PESSIMISTIC_WRITE)
+    @Lock(PESSIMISTIC_READ)
     @Query("select o from Device o where o.id = :id")
-    Optional<Device> findByIdForUpdate(Long id);
+    Optional<Device> findByIdForUpdate(UUID id);
 
     Page<Device> findByBrand(String brand, Pageable pageable);
 

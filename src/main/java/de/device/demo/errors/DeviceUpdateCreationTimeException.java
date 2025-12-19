@@ -2,11 +2,11 @@ package de.device.demo.errors;
 
 import java.util.UUID;
 
-public class DeviceInUseDeleteException extends DeviceModificationException {
-    public DeviceInUseDeleteException(UUID id) {
+public class DeviceUpdateCreationTimeException extends DeviceModificationException {
+    public DeviceUpdateCreationTimeException(UUID id) {
         super(
                 String.format(
-                        "%s: device cannot be deleted due to IN_USE state, device id %s",
+                        "%s: device creation date update error, device id %s",
                         Errors.DEVICE_NOT_MODIFIABLE.getErrorCode(),
                         id
                 )

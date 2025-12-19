@@ -1,8 +1,9 @@
 package de.device.demo.controllers;
 
 import de.device.demo.dtos.DeviceCreateRequest;
+import de.device.demo.dtos.DevicePutRequest;
 import de.device.demo.dtos.DeviceResponse;
-import de.device.demo.dtos.DeviceUpdateRequest;
+import de.device.demo.dtos.DevicePatchRequest;
 import de.device.demo.entities.Device;
 import de.device.demo.models.DeviceState;
 import de.device.demo.services.DeviceService;
@@ -20,6 +21,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @Tag(name = "Device REST API", description = "Manage Devices entries")
 @RestController
@@ -50,7 +53,7 @@ public class DeviceController {
 
     @Tag(name = "find", description = "Find device by device id provided as path variable")
     @GetMapping("/{id}")
-    public ResponseEntity<@NonNull DeviceResponse> device(@PathVariable("id") Long id) {
+    public ResponseEntity<@NonNull DeviceResponse> device(@PathVariable("id") UUID id) {
         log.info("Find device request id {}", id);
 
         return new ResponseEntity<>(
@@ -90,22 +93,36 @@ public class DeviceController {
         return new PageImpl<>(devicesResponse, pageable, devices.getTotalElements());
     }
 
-    @Tag(name = "update", description = "Update device by id and DeviceUpdateRequest payload")
+    @Tag(name = "upsert", description = "Update device by id and DevicePutRequest payload")
     @PutMapping("/{id}")
+    public ResponseEntity<@NonNull DeviceResponse> upsert(
+            @PathVariable("id") UUID id,
+            @Valid @RequestBody DevicePutRequest devicePutRequest
+    ) {
+        log.info("Upsert device id {}", id);
+
+        var upsertDevice = deviceService.upsert(id, devicePutRequest);
+        var httpStatus = upsertDevice.created() ? HttpStatus.CREATED : HttpStatus.OK;
+
+        return new ResponseEntity<>(new DeviceResponse(upsertDevice.device()), httpStatus);
+    }
+
+    @Tag(name = "update", description = "Update device by id and DeviceUpdateRequest payload")
+    @PatchMapping("/{id}")
     public ResponseEntity<@NonNull DeviceResponse> update(
-            @PathVariable("id") Long id,
-            @Valid @RequestBody DeviceUpdateRequest deviceUpdateRequest
+            @PathVariable("id") UUID id,
+            @Valid @RequestBody DevicePatchRequest devicePatchRequest
     ) {
         log.info("Update device id {}", id);
 
-        var device = deviceService.update(id, deviceUpdateRequest);
+        var device = deviceService.update(id, devicePatchRequest);
 
         return new ResponseEntity<>(new DeviceResponse(device), HttpStatus.OK);
     }
 
     @Tag(name = "delete", description = "Delete device by id")
     @DeleteMapping("/{id}")
-    public ResponseEntity<@NonNull DeviceResponse> delete(@PathVariable("id") Long id) {
+    public ResponseEntity<@NonNull DeviceResponse> delete(@PathVariable("id") UUID id) {
         log.info("Delete device id {}", id);
 
         deviceService.delete(id);

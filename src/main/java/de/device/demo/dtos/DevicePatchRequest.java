@@ -6,7 +6,7 @@ import de.device.demo.validators.DeviceStateValid;
 import jakarta.validation.constraints.Size;
 
 @AtLeastOneField
-public record DeviceUpdateRequest(
+public record DevicePatchRequest(
         @Size(min = 1, max = 255, message = "Device name should not be longer 255 characters")
         String name,
 

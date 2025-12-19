@@ -16,6 +16,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import static org.mockito.Mockito.when;
 
@@ -39,8 +40,8 @@ public class DeviceServiceTest {
         var deviceNameTwo = "Device Two";
 
         var devices = new ArrayList<Device>();
-        devices.add(new Device(1L, deviceNameOne, "Brand", DeviceState.AVAILABLE, LocalDateTime.now()));
-        devices.add(new Device(2L, deviceNameTwo, "Brand", DeviceState.AVAILABLE, LocalDateTime.now()));
+        devices.add(new Device(UUID.randomUUID(), deviceNameOne, "Brand", DeviceState.AVAILABLE, LocalDateTime.now()));
+        devices.add(new Device(UUID.randomUUID(), deviceNameTwo, "Brand", DeviceState.AVAILABLE, LocalDateTime.now()));
 
         var devicePage = new PageImpl<>(devices);
         var pageable = Pageable.unpaged();

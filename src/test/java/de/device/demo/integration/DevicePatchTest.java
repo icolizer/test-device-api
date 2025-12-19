@@ -1,7 +1,7 @@
 package de.device.demo.integration;
 
+import de.device.demo.dtos.DevicePatchRequest;
 import de.device.demo.dtos.DeviceResponse;
-import de.device.demo.dtos.DeviceUpdateRequest;
 import de.device.demo.entities.Device;
 import de.device.demo.errors.Errors;
 import de.device.demo.models.DeviceState;
@@ -20,9 +20,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.startsWith;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -30,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class DeviceUpdateTest {
+class DevicePatchTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -48,19 +49,19 @@ class DeviceUpdateTest {
 
     @Test
     void updatedAllFields_isOk() throws Exception {
-        var newDevice = new Device("name", "brand", DeviceState.AVAILABLE, LocalDateTime.now());
+        var newDevice = new Device(UUID.randomUUID(), "name", "brand", DeviceState.AVAILABLE, LocalDateTime.now());
         newDevice = deviceRepository.save(newDevice);
 
         var newName = "device test name";
         var newBrand = "brand test name";
         var newState = DeviceState.INACTIVE;
-        var deviceUpdateRequest = new DeviceUpdateRequest(
+        var deviceUpdateRequest = new DevicePatchRequest(
                 newName,
                 newBrand,
                 newState.name()
         );
 
-        var requestResult = mockMvc.perform(put("/api/devices/" + newDevice.getId())
+        var requestResult = mockMvc.perform(patch("/api/devices/" + newDevice.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(deviceUpdateRequest)))
                 .andExpect(status().isOk())
@@ -80,11 +81,11 @@ class DeviceUpdateTest {
 
     @Test
     void partialUpdateOnlyState_isOk() throws Exception {
-        var newDevice = new Device("name", "brand", DeviceState.AVAILABLE, LocalDateTime.now());
+        var newDevice = new Device(UUID.randomUUID(),"name", "brand", DeviceState.AVAILABLE, LocalDateTime.now());
         newDevice = deviceRepository.save(newDevice);
         var newState = DeviceState.IN_USE;
 
-        var requestResult = mockMvc.perform(put("/api/devices/" + newDevice.getId())
+        var requestResult = mockMvc.perform(patch("/api/devices/" + newDevice.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"state\":\"%s\"}".formatted(newState)))
                 .andExpect(status().isOk())
@@ -104,7 +105,7 @@ class DeviceUpdateTest {
 
     @Test
     void updatedStateWhichDoesNotExists_isBadRequest() throws Exception {
-        mockMvc.perform(put("/api/devices/1")
+        mockMvc.perform(patch("/api/devices/" + UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"state\":\"__broken_value_test__\"}"))
                 .andExpect(status().isBadRequest())
@@ -115,7 +116,7 @@ class DeviceUpdateTest {
 
     @Test
     void updatedDeviceWhichDoesNotExists_isNotFound() throws Exception {
-        mockMvc.perform(put("/api/devices/" + Long.MAX_VALUE)
+        mockMvc.perform(patch("/api/devices/" + UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"something\"}"))
                 .andExpect(status().isNotFound())
@@ -124,7 +125,7 @@ class DeviceUpdateTest {
 
     @Test
     void updatedDeviceEmptyRequest_isBadRequest() throws Exception {
-        mockMvc.perform(put("/api/devices/" + Long.MAX_VALUE)
+        mockMvc.perform(patch("/api/devices/" + UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest())
@@ -133,41 +134,41 @@ class DeviceUpdateTest {
 
     @Test
     void updatedDeviceNameInUseState_isConflict() throws Exception {
-        var newDevice = new Device("name", "brand", DeviceState.IN_USE, LocalDateTime.now());
+        var newDevice = new Device(UUID.randomUUID(), "name", "brand", DeviceState.IN_USE, LocalDateTime.now());
         newDevice = deviceRepository.save(newDevice);
 
-        mockMvc.perform(put("/api/devices/" + newDevice.getId())
+        mockMvc.perform(patch("/api/devices/" + newDevice.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"something\"}"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message", Is.is(
-                        "%s: name or brand fields cannot be updated due to IN_USE state of device with id %d"
+                        "%s: name or brand fields cannot be updated due to IN_USE state of device with id %s"
                                 .formatted(Errors.DEVICE_NOT_MODIFIABLE.getErrorCode(), newDevice.getId())
                 )));
     }
 
     @Test
     void updatedDeviceBrandInUseState_isConflict() throws Exception {
-        var newDevice = new Device("name", "brand", DeviceState.IN_USE, LocalDateTime.now());
+        var newDevice = new Device(UUID.randomUUID(), "name", "brand", DeviceState.IN_USE, LocalDateTime.now());
         newDevice = deviceRepository.save(newDevice);
 
-        mockMvc.perform(put("/api/devices/" + newDevice.getId())
+        mockMvc.perform(patch("/api/devices/" + newDevice.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"brand\":\"something\"}"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message", Is.is(
-                        "%s: name or brand fields cannot be updated due to IN_USE state of device with id %d"
+                        "%s: name or brand fields cannot be updated due to IN_USE state of device with id %s"
                                 .formatted(Errors.DEVICE_NOT_MODIFIABLE.getErrorCode(), newDevice.getId())
                 )));
     }
 
     @Test
     void updatedDeviceStateInUseState_isOk() throws Exception {
-        var newDevice = new Device("name", "brand", DeviceState.IN_USE, LocalDateTime.now());
+        var newDevice = new Device(UUID.randomUUID(), "name", "brand", DeviceState.IN_USE, LocalDateTime.now());
         newDevice = deviceRepository.save(newDevice);
         var newState = DeviceState.INACTIVE;
 
-        mockMvc.perform(put("/api/devices/" + newDevice.getId())
+        mockMvc.perform(patch("/api/devices/" + newDevice.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"state\":\"%s\"}".formatted(newState)))
                 .andExpect(status().isOk());

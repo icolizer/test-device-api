@@ -6,6 +6,9 @@ import de.device.demo.models.DeviceState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Component
 public class DefaultDeviceFactory implements DeviceFactory {
 
@@ -18,11 +21,17 @@ public class DefaultDeviceFactory implements DeviceFactory {
 
     @Override
     public Device createDevice(String name, String brand) {
+        return createDevice(UUID.randomUUID(), name, brand, DeviceState.AVAILABLE, dateTimeInterface.now());
+    }
+
+    @Override
+    public Device createDevice(UUID id, String name, String brand, DeviceState deviceState, LocalDateTime creationDate) {
         var device = new Device();
+        device.setId(id);
         device.setName(name);
         device.setBrand(brand);
-        device.setState(DeviceState.AVAILABLE);
-        device.setCreationTime(dateTimeInterface.now());
+        device.setState(deviceState);
+        device.setCreationTime(creationDate);
 
         return device;
     }

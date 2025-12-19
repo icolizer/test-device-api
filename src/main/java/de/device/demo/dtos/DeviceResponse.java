@@ -5,10 +5,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.device.demo.entities.Device;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public class DeviceResponse {
 
-    private Long id;
+    private UUID id;
 
     private String name;
 
@@ -34,11 +35,11 @@ public class DeviceResponse {
         this.creationTime = newDevice.getCreationTime();
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

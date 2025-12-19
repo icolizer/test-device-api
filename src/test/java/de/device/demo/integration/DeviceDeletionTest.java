@@ -17,6 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -41,7 +42,7 @@ class DeviceDeletionTest {
 
     @Test
     void success() throws Exception {
-        var tempDevice = new Device("name", "brand", DeviceState.AVAILABLE, LocalDateTime.now());
+        var tempDevice = new Device(UUID.randomUUID(),"name", "brand", DeviceState.AVAILABLE, LocalDateTime.now());
         deviceRepository.save(tempDevice);
 
         mockMvc.perform(delete("/api/devices/" + tempDevice.getId())
@@ -55,13 +56,13 @@ class DeviceDeletionTest {
 
     @Test
     void deleteDeviceInUse_getConflictError() throws Exception {
-        var tempDevice = new Device("name", "brand", DeviceState.IN_USE, LocalDateTime.now());
+        var tempDevice = new Device(UUID.randomUUID(), "name", "brand", DeviceState.IN_USE, LocalDateTime.now());
         deviceRepository.save(tempDevice);
 
         mockMvc.perform(delete("/api/devices/" + tempDevice.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", Is.is(
-                        "%s: device cannot be deleted due to IN_USE state, device id %d"
+                        "%s: device cannot be deleted due to IN_USE state, device id %s"
                                 .formatted(Errors.DEVICE_NOT_MODIFIABLE.getErrorCode(), tempDevice.getId())
                 )))
                 .andExpect(status().isConflict());
@@ -73,7 +74,7 @@ class DeviceDeletionTest {
 
     @Test
     void deleteDeviceDoesNotExists_getNotFoundResponse() throws Exception {
-        mockMvc.perform(delete("/api/devices/-100")
+        mockMvc.perform(delete("/api/devices/" + UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }

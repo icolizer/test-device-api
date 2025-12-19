@@ -21,6 +21,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -52,10 +53,10 @@ class DeviceFetchTest {
         var deviceNameTwo = "Device Two";
 
         var devices = new ArrayList<Device>();
-        devices.add(new Device(deviceNameOne, "Brand", DeviceState.AVAILABLE, LocalDateTime.now()));
-        devices.add(new Device(deviceNameTwo, "Brand", DeviceState.AVAILABLE, LocalDateTime.now()));
-        devices.add(new Device("Dummy 1", "Brand", DeviceState.AVAILABLE, LocalDateTime.now()));
-        devices.add(new Device("Dummy 2", "Brand", DeviceState.AVAILABLE, LocalDateTime.now()));
+        devices.add(new Device(UUID.randomUUID(), deviceNameOne, "Brand", DeviceState.AVAILABLE, LocalDateTime.now()));
+        devices.add(new Device(UUID.randomUUID(), deviceNameTwo, "Brand", DeviceState.AVAILABLE, LocalDateTime.now()));
+        devices.add(new Device(UUID.randomUUID(), "Dummy 1", "Brand", DeviceState.AVAILABLE, LocalDateTime.now()));
+        devices.add(new Device(UUID.randomUUID(), "Dummy 2", "Brand", DeviceState.AVAILABLE, LocalDateTime.now()));
 
         deviceRepository.saveAll(devices);
 
@@ -80,19 +81,27 @@ class DeviceFetchTest {
     @Test
     public void fetchDeviceById_resultFound() throws Exception {
         var deviceWithName = "TEST: Known ID";
-        var knownDevice = new Device(deviceWithName, "Brand", DeviceState.AVAILABLE, LocalDateTime.now());
+        var knownDevice = new Device(UUID.randomUUID(), deviceWithName, "Brand", DeviceState.AVAILABLE, LocalDateTime.now());
         var persistedDevice = deviceRepository.save(knownDevice);
 
         mockMvc.perform(get("/api/devices/" + persistedDevice.getId())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", Is.is(Math.toIntExact(persistedDevice.getId()))))
+                .andExpect(jsonPath("$.id", Is.is(persistedDevice.getId().toString())))
                 .andExpect(jsonPath("$.name", Is.is(persistedDevice.getName())));
     }
 
     @Test
-    public void fetchDeviceById_resultNotFound() throws Exception {
+    public void fetchDeviceByWrongUUID_resultBadRequest() throws Exception {
         mockMvc.perform(get("/api/devices/" + Long.MAX_VALUE)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", Is.is("Invalid UUID format")));
+    }
+
+    @Test
+    public void fetchDeviceById_resultNotFound() throws Exception {
+        mockMvc.perform(get("/api/devices/" + UUID.randomUUID())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message", startsWith(Errors.DEVICE_ID_NOT_FOUND.getErrorCode())));
@@ -103,9 +112,9 @@ class DeviceFetchTest {
         var brand = "sayHello";
         var deviceWithName1 = "testName1";
         var deviceWithName2 = "testName2";
-        var knownDevice1 = new Device(deviceWithName1, brand, DeviceState.AVAILABLE, LocalDateTime.now());
-        var knownDevice2 = new Device(deviceWithName2, brand, DeviceState.AVAILABLE, LocalDateTime.now());
-        var impurity = new Device(deviceWithName2, "any other brand", DeviceState.AVAILABLE, LocalDateTime.now());
+        var knownDevice1 = new Device(UUID.randomUUID(), deviceWithName1, brand, DeviceState.AVAILABLE, LocalDateTime.now());
+        var knownDevice2 = new Device(UUID.randomUUID(), deviceWithName2, brand, DeviceState.AVAILABLE, LocalDateTime.now());
+        var impurity = new Device(UUID.randomUUID(), deviceWithName2, "any other brand", DeviceState.AVAILABLE, LocalDateTime.now());
 
         deviceRepository.save(knownDevice1);
         deviceRepository.save(knownDevice2);
@@ -132,9 +141,9 @@ class DeviceFetchTest {
         var brand = "fetchDeviceByState_isOk";
         var deviceWithName1 = "testName1";
         var deviceWithName2 = "testName2";
-        var knownDevice1 = new Device(deviceWithName1, brand, DeviceState.INACTIVE, LocalDateTime.now());
-        var knownDevice2 = new Device(deviceWithName2, brand, DeviceState.INACTIVE, LocalDateTime.now());
-        var impurity = new Device(deviceWithName2, "any other brand", DeviceState.AVAILABLE, LocalDateTime.now());
+        var knownDevice1 = new Device(UUID.randomUUID(), deviceWithName1, brand, DeviceState.INACTIVE, LocalDateTime.now());
+        var knownDevice2 = new Device(UUID.randomUUID(), deviceWithName2, brand, DeviceState.INACTIVE, LocalDateTime.now());
+        var impurity = new Device(UUID.randomUUID(), deviceWithName2, "any other brand", DeviceState.AVAILABLE, LocalDateTime.now());
 
         deviceRepository.save(knownDevice1);
         deviceRepository.save(knownDevice2);
