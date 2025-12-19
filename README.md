@@ -57,3 +57,13 @@ Date: Thu, 18 Dec 2025 22:54:17 GMT
 Once the application is running, the API documentation can be accessed at:
 
 http://localhost:8080/swagger-ui/index.html
+
+## Health and metrics endpoints
+
+To check health access: http://localhost:8081/actuator/health
+
+To see the list of expose metrics visit: http://localhost:8081/actuator/metrics
+
+After any request done to the running server requests statistics will be available here: http://localhost:8081/actuator/metrics/http.server.requests
+
+Prometheus logs: http://localhost:8081/actuator/prometheus
