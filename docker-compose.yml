@@ -20,7 +20,7 @@ services:
 
   app:
     build: .
-    container_name: spring-boot-app
+    container_name: device-app
     depends_on:
       postgres:
         condition: service_healthy
@@ -30,6 +30,12 @@ services:
       SPRING_DATASOURCE_USERNAME: admin_admin
       SPRING_DATASOURCE_PASSWORD: pa$$word
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health/readiness" ]
       interval: 10s
